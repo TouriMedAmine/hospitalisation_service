@@ -37,7 +37,7 @@ public class HospitalisationController {
 	public Affichage afficherDetail(@PathVariable("id") Long id) {
 		Affichage affichage = new Affichage();
 		Hospitalisation hosp = hospRepository.findById(id).orElse(null);
-		Patient patient = restTemplate.getForObject( "http://PATIENT-SERVICE/patient/"+hosp.getIdPatient(), 
+		Patient patient = restTemplate.getForObject( "http://PATIENT-SERVICE/cin/"+hosp.getCin(), 
 									Patient.class);
 		affichage.setPatient(patient);
 		affichage.setHosp(hosp);

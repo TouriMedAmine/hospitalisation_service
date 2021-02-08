@@ -10,13 +10,13 @@ public class Hospitalisation {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	long id;
-	long idPatient;
+	String cin;
 	long idMedcin;
 	long idAdmin;
 	String duree;
-	public Hospitalisation(long idPatient, long idMedcin, long idAdmin, String duree) {
+	public Hospitalisation(String cin, long idMedcin, long idAdmin, String duree) {
 		super();
-		this.idPatient = idPatient;
+		this.cin = cin;
 		this.idMedcin = idMedcin;
 		this.idAdmin = idAdmin;
 		this.duree = duree;
@@ -30,11 +30,11 @@ public class Hospitalisation {
 	public void setId(long id) {
 		this.id = id;
 	}
-	public long getIdPatient() {
-		return idPatient;
+	public String getCin() {
+		return cin;
 	}
-	public void setIdPatient(long idPatient) {
-		this.idPatient = idPatient;
+	public void setCin(String cin) {
+		this.cin = cin;
 	}
 	public long getIdMedcin() {
 		return idMedcin;
