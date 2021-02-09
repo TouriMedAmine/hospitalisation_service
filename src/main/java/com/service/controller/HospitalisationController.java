@@ -1,5 +1,7 @@
 package com.service.controller;
 
+import java.util.Date;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -9,8 +11,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.service.entity.Hospitalisation;
 import com.service.models.Affichage;
+import com.service.models.Medecin;
 import com.service.models.Patient;
 import com.service.repository.HospitalisationRepository;
 
@@ -19,27 +23,40 @@ import com.service.repository.HospitalisationRepository;
 public class HospitalisationController {
 	@Autowired
 	public HospitalisationRepository hospRepository;
-	
+
 	@Autowired
 	public RestTemplate restTemplate;
-	
+
 	@PostMapping("/sauvegarder")
 	public Hospitalisation sauvgarderHosp(@RequestBody Hospitalisation hosp) {
 		return hospRepository.save(hosp);
 	}
-	
+
 	@GetMapping("/{id}")
 	public Hospitalisation trouverHospParId(@PathVariable("id") Long id) {
 		return hospRepository.findById(id).orElse(null);
 	}
-	
+
 	@GetMapping("/detail/{id}")
+	@HystrixCommand(fallbackMethod = "callPatientPersonnelServiceAndGetData_Fallback")
 	public Affichage afficherDetail(@PathVariable("id") Long id) {
 		Affichage affichage = new Affichage();
 		Hospitalisation hosp = hospRepository.findById(id).orElse(null);
-		Patient patient = restTemplate.getForObject( "http://PATIENT-SERVICE/cin/"+hosp.getCin(), 
-									Patient.class);
+		Patient patient = restTemplate.getForObject("http://PATIENT-SERVICE/patient/cin/" + hosp.getCinP(),
+				Patient.class);
+		Medecin medecin = restTemplate.getForObject(
+				"http://PERSONNEL-SERVICE/Personnel/Medecin/medecinByCin" + hosp.getCinM(), Medecin.class);
 		affichage.setPatient(patient);
+		affichage.setMedecin(medecin);
+		affichage.setHosp(hosp);
+		return affichage;
+	}
+
+	private Affichage callPatientPersonnelServiceAndGetData_Fallback(Long id) {
+
+		System.out.println("Probleme du Patient service ou medecin service!!! fallback route enabled...");
+		Affichage affichage = new Affichage();
+		Hospitalisation hosp = hospRepository.findById(id).orElse(null);
 		affichage.setHosp(hosp);
 		return affichage;
 	}
